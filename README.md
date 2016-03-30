@@ -2,7 +2,7 @@
 [WIP] A photobooth using a Raspberry Pi and a DSLR.
 
 Goals :
-- [ ] running from framebuffer
+- [x] running from framebuffer
 - [ ] showing live preview
 - [ ] textual guidance
 - [ ] take photos after pushing a physical button
