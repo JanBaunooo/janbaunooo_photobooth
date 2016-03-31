@@ -109,12 +109,13 @@ class photobooth :
 
     def capturePreviewLoop(self):
         print('Capture PreviewLoop')
-        camera_file = gp.check_result(gp.gp_camera_capture_preview(self.camera, self.context))
-        file_data = gp.check_result(gp.gp_file_get_data_and_size(camera_file))
-        image = Image.open(io.BytesIO(file_data))
-        #img = pygame.image.fromstring(image.tostring(), (image.size[0],image.size[1]), 'RGB', False)
-        #main_surface.blit(img, (0, 0))
-        #time.sleep(10)
+        while True:
+            camera_file = gp.check_result(gp.gp_camera_capture_preview(self.camera, self.context))
+            file_data = gp.check_result(gp.gp_file_get_data_and_size(camera_file))
+            image = Image.open(io.BytesIO(file_data))
+            #img = pygame.image.fromstring(image.tostring(), (image.size[0],image.size[1]), 'RGB', False)
+            #main_surface.blit(img, (0, 0))
+            #time.sleep(10)
 
 # Create an instance of the photobooth class
 photobooth = photobooth()
