@@ -14,7 +14,6 @@ class photobooth :
         disp_no = os.getenv("DISPLAY")
         if disp_no:
             print "I'm running under X display = {0}".format(disp_no)
-        
         # Check which frame buffer drivers are available
         # Start with fbcon since directfb hangs with composite output
         drivers = ['fbcon', 'directfb', 'svgalib']
@@ -30,10 +29,8 @@ class photobooth :
                 continue
             found = True
             break
-    
         if not found:
             raise Exception('No suitable video driver found!')
-        
         size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
         print "Framebuffer size: %d x %d" % (size[0], size[1])
         self.screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
@@ -68,25 +65,11 @@ class photobooth :
                 raise gp.GPhoto2Error(error)
             # no camera, try again in 2 seconds
             time.sleep(2)
-        print('Connected.')
-        try:
-            print('Trying gp_camera_capture GP_CAPTURE_IMAGE')
-            file_path = gp.check_result(gp.gp_camera_capture(camera, gp.GP_CAPTURE_IMAGE, context))
-            print('Success : GP_CAPTURE_IMAGE path: {0}/{1}'.format(file_path.folder, file_path.name))
-        except Exception as e:
-            print('Error : GP_CAPTURE_IMAGE unsupported.')
-            print(e)
-        try:
-            print('Trying gp_camera_capture_preview')
-            file_path = gp.check_result(gp.gp_camera_capture_preview(camera, context))
-            file_path = gp.check_result(gp.gp_camera_capture_preview(camera, context))
-            file_path = gp.check_result(gp.gp_camera_capture_preview(camera, context))
-            file_path = gp.check_result(gp.gp_camera_capture_preview(camera, context))
-            file_path = gp.check_result(gp.gp_camera_capture_preview(camera, context))           
-            print('Success : capture_preview path: {0}/{1}'.format(file_path.folder, file_path.name))
-        except Exception as e:
-            print('Error : capture_preview unsupported.')
-            print(e)
+        file_path = gp.check_result(gp.gp_camera_capture(camera, gp.GP_CAPTURE_IMAGE, context))
+        print('Success : GP_CAPTURE_IMAGE path: {0}/{1}'.format(file_path.folder, file_path.name))
+        file_path = gp.check_result(gp.gp_camera_capture_preview(camera, context))
+        file_path = gp.check_result(gp.gp_camera_capture_preview(camera, context))
+        print('Success : capture_preview path: {0}/{1}'.format(file_path.folder, file_path.name))
         #picture = pygame.image.load(file)
         #main_surface.blit(picture, (0, 0))
         #pygame.display.flip()
