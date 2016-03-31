@@ -13,7 +13,7 @@ class photobooth :
     
     def __init__(self):
         self.connectFrameBuffer();
-        self.connectSLR();
+        self.connectDSLR();
 
     def __del__(self):
         "Destructor to make sure pygame shuts down, etc."
