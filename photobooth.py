@@ -127,6 +127,30 @@ class photobooth :
             #time.sleep(10)
             ##time.sleep(1)
 
+    def drawText(self, text='text', colour=None, pos=None, center=True, font='mono', fontsize=12, antialias=True):
+        if colour == None:
+            colour = self.fgc
+        if pos == None:
+            pos = (self.dispsize[0]/2, self.dispsize[1]/2)
+        if not pygame.font.get_init():
+            pygame.font.init()
+        fontname = os.path.join(pygaze.FONTDIR, font) + '.ttf'
+        if not os.path.isfile(fontname):
+            print("WARNING: screen.Screen: could not find font '%s'; using default instead" % fontname)
+            fontname = pygame.font.get_default_font()
+        font = pygame.font.Font(fontname, fontsize)
+        lines = text.split("\n")
+        lineh = font.get_linesize()
+        for lnr in range(0,len(lines)):
+            txtsurf = font.render(lines[lnr], antialias, self.fgc)
+            if center and len(lines) == 1:
+                linepos = (pos[0] - font.size(lines[lnr])[0]/2, pos[1] - font.size(lines[lnr])[1]/2)
+            elif center:
+                linepos = (pos[0] - font.size(lines[lnr])[0]/2, pos[1] + lineh * (2 * (lnr - (len(lines)/2.0) + 0.5)))
+            else:
+                linepos = (pos[0], pos[1] + 2 * lnr)
+            self.screen.blit(txtsurf, (int(linepos[0]),int(linepos[1])))
+
 # Create an instance of the photobooth class
 photobooth = photobooth()
 photobooth.captureImage()
