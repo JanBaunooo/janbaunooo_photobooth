@@ -10,10 +10,15 @@ class photobooth :
     screen = None;
     context = None;
     camera = None;
-    
+    fontdir = None;
+    photodir = None;
+
     def __init__(self):
         self.connectFrameBuffer();
         self.connectDSLR();
+        currentdir = os.path.dirname(__file__)
+        fontdir = os.path.join(currentdir, u'fonts');
+        photodir = os.path.join(currentdir, u'photos');
 
     def __del__(self):
         "Destructor to make sure pygame shuts down, etc."
@@ -134,7 +139,7 @@ class photobooth :
             pos = (self.dispsize[0]/2, self.dispsize[1]/2)
         if not pygame.font.get_init():
             pygame.font.init()
-        fontname = os.path.join(pygaze.FONTDIR, font) + '.ttf'
+        fontname = os.path.join(self.fontdir, font) + '.ttf'
         if not os.path.isfile(fontname):
             print("WARNING: screen.Screen: could not find font '%s'; using default instead" % fontname)
             fontname = pygame.font.get_default_font()
