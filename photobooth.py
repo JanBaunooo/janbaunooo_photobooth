@@ -2,6 +2,7 @@ import os
 import pygame
 import time
 import random
+import gphoto2 as gp
 
 class photobooth :
     screen = None;
@@ -53,7 +54,45 @@ class photobooth :
         # Update the display
         pygame.display.update()
 
-# Create an instance of the PyScope class
+    def captureMovie(self):
+        print('Please connect and switch on your camera')
+        context = gp.gp_context_new()
+        camera = gp.check_result(gp.gp_camera_new())
+        while True:
+            error = gp.gp_camera_init(camera, context)
+            if error >= gp.GP_OK:
+                # operation completed successfully so exit loop
+                break
+            if error != gp.GP_ERROR_MODEL_NOT_FOUND:
+                # some other error we can't handle here
+                raise gp.GPhoto2Error(error)
+            # no camera, try again in 2 seconds
+            time.sleep(2)
+        print('Connected.')
+        try:
+            print('Trying gp_camera_capture GP_CAPTURE_IMAGE')
+            file_path = gp.check_result(gp.gp_camera_capture(camera, gp.GP_CAPTURE_IMAGE, context))
+            print('Success : GP_CAPTURE_IMAGE path: {0}/{1}'.format(file_path.folder, file_path.name))
+        except Exception as e:
+            print('Error : GP_CAPTURE_IMAGE unsupported.')
+            print(e)
+        try:
+            print('Trying gp_camera_capture_preview')
+            file_path = gp.check_result(gp.gp_camera_capture_preview(camera, context))
+            file_path = gp.check_result(gp.gp_camera_capture_preview(camera, context))
+            file_path = gp.check_result(gp.gp_camera_capture_preview(camera, context))
+            file_path = gp.check_result(gp.gp_camera_capture_preview(camera, context))
+            file_path = gp.check_result(gp.gp_camera_capture_preview(camera, context))           
+            print('Success : capture_preview path: {0}/{1}'.format(file_path.folder, file_path.name))
+        except Exception as e:
+            print('Error : capture_preview unsupported.')
+            print(e)
+        #picture = pygame.image.load(file)
+        #main_surface.blit(picture, (0, 0))
+        #pygame.display.flip()
+        gp.check_result(gp.gp_camera_exit(camera, context))
+
+# Create an instance of the photobooth class
 photobooth = photobooth()
-photobooth.test()
-time.sleep(10)
+photobooth.captureMovie()
+# time.sleep(10)
