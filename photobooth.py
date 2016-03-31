@@ -118,7 +118,7 @@ class photobooth :
             image = Image.open(io.BytesIO(file_data))
             #img = pygame.image.fromstring(image.tostring(), (image.size[0],image.size[1]), 'RGB', False)
             #main_surface.blit(img, (0, 0))
-            #time.sleep(10)
+            ##time.sleep(1)
 
 # Create an instance of the photobooth class
 photobooth = photobooth()
