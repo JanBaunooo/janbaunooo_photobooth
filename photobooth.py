@@ -116,6 +116,7 @@ class photobooth :
         ##    img = pygame.transform.scale(img, (int(img.get_width()*scale), int(img.get_height()*scale)))
         #imgpos = (int(pos[0] - img.get_width()/2), int(pos[1] - img.get_height()/2))
         #self.screen.blit(img, imgpos)
+        #pygame.display.update()
         #time.sleep(10)
 
     def capturePreviewLoop(self):
@@ -129,6 +130,7 @@ class photobooth :
             ##    img = pygame.transform.scale(img, (int(img.get_width()*scale), int(img.get_height()*scale)))
             #imgpos = (int(pos[0] - img.get_width()/2), int(pos[1] - img.get_height()/2))
             #self.screen.blit(img, imgpos)
+            #pygame.display.update()
             #time.sleep(10)
             ##time.sleep(1)
 
@@ -155,6 +157,7 @@ class photobooth :
             else:
                 linepos = (pos[0], pos[1] + 2 * lnr)
             self.screen.blit(txtsurf, (int(linepos[0]),int(linepos[1])))
+            pygame.display.update()
 
 # Create an instance of the photobooth class
 photobooth = photobooth()
