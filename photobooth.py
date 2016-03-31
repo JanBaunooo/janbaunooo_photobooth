@@ -107,7 +107,10 @@ class photobooth :
                                             self.context))
         gp.check_result(gp.gp_file_save(camera_file, target))
         #img = pygame.image.load(target)
-        #main_surface.blit(img, (0, 0))
+        ##if scale != None:
+        ##    img = pygame.transform.scale(img, (int(img.get_width()*scale), int(img.get_height()*scale)))
+        #imgpos = (int(pos[0] - img.get_width()/2), int(pos[1] - img.get_height()/2))
+        #self.screen.blit(img, imgpos)
         #time.sleep(10)
 
     def capturePreviewLoop(self):
@@ -117,7 +120,11 @@ class photobooth :
             file_data = gp.check_result(gp.gp_file_get_data_and_size(camera_file))
             image = Image.open(io.BytesIO(file_data))
             #img = pygame.image.fromstring(image.tostring(), (image.size[0],image.size[1]), 'RGB', False)
-            #main_surface.blit(img, (0, 0))
+            ##if scale != None:
+            ##    img = pygame.transform.scale(img, (int(img.get_width()*scale), int(img.get_height()*scale)))
+            #imgpos = (int(pos[0] - img.get_width()/2), int(pos[1] - img.get_height()/2))
+            #self.screen.blit(img, imgpos)
+            #time.sleep(10)
             ##time.sleep(1)
 
 # Create an instance of the photobooth class
