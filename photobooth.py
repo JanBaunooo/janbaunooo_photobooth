@@ -6,8 +6,18 @@ import gphoto2 as gp
 
 class photobooth :
     screen = None;
+    context = None;
+    camera = None;
     
     def __init__(self):
+        self.connectFrameBuffer();
+        self.connectSLR();
+
+    def __del__(self):
+        "Destructor to make sure pygame shuts down, etc."
+        gp.check_result(gp.gp_camera_exit(self.camera, self.context))
+
+    def connectFrameBuffer(self):
         "Initialize a new pygame screen using the framebuffer"
         disp_no = os.getenv("DISPLAY")
         if disp_no:
@@ -42,15 +52,12 @@ class photobooth :
         # Render the screen
         pygame.display.update()
 
-    def __del__(self):
-        "Destructor to make sure pygame shuts down, etc."
-
     def connectDSLR(self):
         print('Please connect and switch on your camera')
-        context = gp.gp_context_new()
-        camera = gp.check_result(gp.gp_camera_new())
+        self.context = gp.gp_context_new()
+        self.camera = gp.check_result(gp.gp_camera_new())
         while True:
-            error = gp.gp_camera_init(camera, context)
+            error = gp.gp_camera_init(self.camera, self.context)
             if error >= gp.GP_OK:
                 # operation completed successfully so exit loop
                 break
@@ -61,14 +68,14 @@ class photobooth :
             time.sleep(2)
         if hasattr(gp, 'gp_camera_autodetect'):
             # gphoto2 version 2.5+
-            cameras = gp.check_result(gp.gp_camera_autodetect(context))
+            cameras = gp.check_result(gp.gp_camera_autodetect(self.context))
         else:
             port_info_list = gp.check_result(gp.gp_port_info_list_new())
             gp.check_result(gp.gp_port_info_list_load(port_info_list))
             abilities_list = gp.check_result(gp.gp_abilities_list_new())
-            gp.check_result(gp.gp_abilities_list_load(abilities_list, context))
+            gp.check_result(gp.gp_abilities_list_load(abilities_list, self.context))
             cameras = gp.check_result(gp.gp_abilities_list_detect(
-                abilities_list, port_info_list, context))
+                abilities_list, port_info_list, self.context))
         n = 0
         for name, value in cameras:
             print('camera number', n)
@@ -86,31 +93,25 @@ class photobooth :
         # Update the display
         pygame.display.update()
     
-    def captureMovie(self):
-        print('Please connect and switch on your camera')
-        context = gp.gp_context_new()
-        camera = gp.check_result(gp.gp_camera_new())
-        while True:
-            error = gp.gp_camera_init(camera, context)
-            if error >= gp.GP_OK:
-                # operation completed successfully so exit loop
-                break
-            if error != gp.GP_ERROR_MODEL_NOT_FOUND:
-                # some other error we can't handle here
-                raise gp.GPhoto2Error(error)
-            # no camera, try again in 2 seconds
-            time.sleep(2)
-        file_path = gp.check_result(gp.gp_camera_capture(camera, gp.GP_CAPTURE_IMAGE, context))
-        print('Success : GP_CAPTURE_IMAGE path: {0}/{1}'.format(file_path.folder, file_path.name))
-        file_path = gp.check_result(gp.gp_camera_capture_preview(camera, context))
-        file_path = gp.check_result(gp.gp_camera_capture_preview(camera, context))
-        print('Success : capture_preview path: {0}/{1}'.format(file_path.folder, file_path.name))
-        #picture = pygame.image.load(file)
-        #main_surface.blit(picture, (0, 0))
-        #pygame.display.flip()
-        gp.check_result(gp.gp_camera_exit(camera, context))
+    def captureImage(self):
+        print('Capture image')
+        file_path = gp.check_result(gp.gp_camera_capture(self.camera, gp.GP_CAPTURE_IMAGE, self.context))
+        target = os.path.join('/tmp', file_path.name)
+        print('Copying image to', target)
+        camera_file = gp.check_result(gp.gp_camera_file_get(
+                                            self.camera, file_path.folder,
+                                            file_path.name,
+                                            gp.GP_FILE_TYPE_NORMAL,
+                                            self.context))
+        gp.check_result(gp.gp_file_save(camera_file, target))
+
+    def capturePreviewLoop(self):
+        print('Capture PreviewLoop')
 
 # Create an instance of the photobooth class
 photobooth = photobooth()
-photobooth.captureMovie()
+photobooth.captureImage()
+#picture = pygame.image.load(file)
+#main_surface.blit(picture, (0, 0))
+#pygame.display.flip()
 # time.sleep(10)
