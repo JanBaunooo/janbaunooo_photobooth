@@ -17,8 +17,8 @@ class photobooth :
         self.connectFrameBuffer();
         self.connectDSLR();
         currentdir = os.path.dirname(__file__)
-        fontdir = os.path.join(currentdir, u'fonts');
-        photodir = os.path.join(currentdir, u'photos');
+        self.fontdir = os.path.join(currentdir, u'fonts');
+        self.photodir = os.path.join(currentdir, u'photos');
 
     def __del__(self):
         "Destructor to make sure pygame shuts down, etc."
