@@ -106,6 +106,9 @@ class photobooth :
                                             gp.GP_FILE_TYPE_NORMAL,
                                             self.context))
         gp.check_result(gp.gp_file_save(camera_file, target))
+        #img = pygame.image.load(target)
+        #main_surface.blit(img, (0, 0))
+        #time.sleep(10)
 
     def capturePreviewLoop(self):
         print('Capture PreviewLoop')
