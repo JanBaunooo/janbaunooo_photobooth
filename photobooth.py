@@ -8,9 +8,7 @@ class photobooth :
     screen = None;
     
     def __init__(self):
-        "Ininitializes a new pygame screen using the framebuffer"
-        # Based on "Python GUI in Linux frame buffer"
-        # http://www.karoltomala.com/blog/?p=679
+        "Initialize a new pygame screen using the framebuffer"
         disp_no = os.getenv("DISPLAY")
         if disp_no:
             print "I'm running under X display = {0}".format(disp_no)
@@ -32,7 +30,10 @@ class photobooth :
         if not found:
             raise Exception('No suitable video driver found!')
         size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
+        print('Framebuffer initialized')
+        print('=======')
         print "Framebuffer size: %d x %d" % (size[0], size[1])
+        print('=======')
         self.screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
         # Clear the screen to start
         self.screen.fill((0, 0, 0))        
@@ -44,13 +45,47 @@ class photobooth :
     def __del__(self):
         "Destructor to make sure pygame shuts down, etc."
 
+    def connectDSLR(self):
+        print('Please connect and switch on your camera')
+        context = gp.gp_context_new()
+        camera = gp.check_result(gp.gp_camera_new())
+        while True:
+            error = gp.gp_camera_init(camera, context)
+            if error >= gp.GP_OK:
+                # operation completed successfully so exit loop
+                break
+            if error != gp.GP_ERROR_MODEL_NOT_FOUND:
+                # some other error we can't handle here
+                raise gp.GPhoto2Error(error)
+            # no camera, try again in 2 seconds
+            time.sleep(2)
+        if hasattr(gp, 'gp_camera_autodetect'):
+            # gphoto2 version 2.5+
+            cameras = gp.check_result(gp.gp_camera_autodetect(context))
+        else:
+            port_info_list = gp.check_result(gp.gp_port_info_list_new())
+            gp.check_result(gp.gp_port_info_list_load(port_info_list))
+            abilities_list = gp.check_result(gp.gp_abilities_list_new())
+            gp.check_result(gp.gp_abilities_list_load(abilities_list, context))
+            cameras = gp.check_result(gp.gp_abilities_list_detect(
+                abilities_list, port_info_list, context))
+        n = 0
+        for name, value in cameras:
+            print('camera number', n)
+            print('===============')
+            print(name)
+            print(value)
+            print
+            n += 1
+        return 0
+
     def test(self):
         # Fill the screen with red (255, 0, 0)
         red = (255, 0, 0)
         self.screen.fill(red)
         # Update the display
         pygame.display.update()
-
+    
     def captureMovie(self):
         print('Please connect and switch on your camera')
         context = gp.gp_context_new()
