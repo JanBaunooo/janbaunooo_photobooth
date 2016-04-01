@@ -8,10 +8,12 @@ try:
     import random
     import getopt
     import math
-    #import gphoto2
-    #from PIL import Image
+    import gphoto2
+    import io
+    from PIL import Image
     from socket import *
     from pygame.locals import *
+
 except ImportError, err:
     print "Module not loaded : %s" % (err)
     sys.exit(2)
@@ -22,7 +24,7 @@ class RemoteDSLR:
     def __init__(self):
         #Initialize
         self.context = gphoto2.gp_context_new()
-        self.camera = gphoto2.check_result(gp.gp_camera_new())
+        self.camera = gphoto2.check_result(gphoto2.gp_camera_new())
         self.connect()
     def connect(self):
         print('Please connect and switch on your camera')
@@ -47,7 +49,7 @@ class RemoteDSLR:
             file_data = gphoto2.check_result(
                                         gphoto2.gp_file_get_data_and_size(camera_file))
             image = Image.open(io.BytesIO(file_data))
-        except:
+        except Exception, err:
             print "Preview not captured : %s" % (err)
             image = None
         return image
@@ -95,7 +97,7 @@ def main():
         print('No suitable video driver found ! Fallback without framebuffer')
         os.unsetenv('SDL_VIDEODRIVER')
         pygame.init()
-        screen = pygame.display.set_mode((1200, 860)) #, pygame.FULLSCREEN
+        screen = pygame.display.set_mode((1200, 860), pygame.FULLSCREEN)
     else:
         size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
         screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
@@ -116,6 +118,7 @@ def main():
     inPreviewLoop = True
     # Events Loop
     while mainLoopRunning:
+	print('MainLoop : run started')
         # Limit FPS to 60fps
         # clock.tick(60)
         for event in pygame.event.get():
@@ -123,7 +126,14 @@ def main():
                 mainLoopRunning = False
                 return
         if inPreviewLoop:
-            remoteDSLR.capturePreview
+            image = remoteDSLR.capturePreview()
+            mode = image.mode
+            size = image.size
+            data = image.tostring()
+            assert mode in 'RGB','RGBA'
+            surfacePreview = pygame.image.fromstring(data, size, mode)
+            screen.blit(surfacePreview, (0,0))
         pygame.display.flip()
+	print('MainLoop : run finished')
 
 if __name__ == '__main__': main()
