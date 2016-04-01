@@ -23,6 +23,7 @@ class RemoteDSLR:
         #Initialize
         self.context = gphoto2.gp_context_new()
         self.camera = gphoto2.check_result(gp.gp_camera_new())
+        self.connect()
     def connect(self):
         print('Please connect and switch on your camera')
         while True:
