@@ -1,5 +1,5 @@
 # janbaunooo_photobooth
-[WIP] A photobooth using a Raspberry Pi and a DSLR.
+[WIP] A photobooth using a Raspberry Pi and a DSLR written in Python and running from framebuffer.
 
 Goals :
 - [x] running from framebuffer
@@ -12,9 +12,8 @@ Goals :
 Take photos sequence :
 - [ ] countdown
 - [ ] turn on lights
-- [ ] capture photo
+- [x] capture photo
 - [ ] show captured photo briefly
-
 
 Using :
 - libgphoto2
