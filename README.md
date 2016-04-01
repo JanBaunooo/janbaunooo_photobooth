@@ -3,7 +3,7 @@
 
 Goals :
 - [x] running from framebuffer
-- [ ] showing live preview
+- [x] showing live preview
 - [ ] textual guidance
 - [ ] take photos after pushing a physical button
 - [ ] show photos sequence
