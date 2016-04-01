@@ -21,11 +21,15 @@ except ImportError, err:
 class RemoteDSLR:
     context = None
     camera = None
+    previewMode = None
+    previewSize = None
     def __init__(self):
         #Initialize
         self.context = gphoto2.gp_context_new()
         self.camera = gphoto2.check_result(gphoto2.gp_camera_new())
         self.connect()
+        self.previewMode = self.getPreviewMode()
+        self.previewSize = self.getPreviewSize()
     def connect(self):
         print('Please connect and switch on your camera')
         while True:
@@ -40,7 +44,6 @@ class RemoteDSLR:
             time.sleep(2)
         print('Camera connected')   
     def capturePreview(self):
-        print 'CapturePreview'
         try:
             camera_file = gphoto2.check_result(
                                         gphoto2.gp_camera_capture_preview(
@@ -53,9 +56,19 @@ class RemoteDSLR:
             print "Preview not captured : %s" % (err)
             image = None
         return image
+    def getPreviewMode(self):
+        if self.previewMode == None :
+            image = self.capturePreview()
+            assert image.mode in 'RGB','RGBA'
+            self.previewMode = image.mode
+        return self.previewMode
+    def getPreviewSize(self):
+        if self.previewSize == None :
+            image = self.capturePreview()
+            self.previewSize = image.size
+        return self.previewSize            
     def captureImage(self,target):
         print('Capture image')
-        #target = os.path.join('/tmp', file_path.name)
         try:
             file_path = gphoto2.check_result(
                                 gphoto2.gp_camera_capture(
@@ -107,33 +120,38 @@ def main():
     background = pygame.Surface(screen.get_size())
     background = background.convert()
     background.fill((0, 0, 0))
-    # Initialize components
-    remoteDSLR = RemoteDSLR()
-    # Update screen
     screen.blit(background, (0, 0))
     pygame.display.flip()
+    # Initialize components
+    remoteDSLR = RemoteDSLR()
+    previewMode = None
+    previewSize = None
+    surfacePreviewRect = None
     # Initialize clock
     clock = pygame.time.Clock()
     mainLoopRunning = True
     inPreviewLoop = True
+    captureImage = False
     # Events Loop
     while mainLoopRunning:
-	print('MainLoop : run started')
         # Limit FPS to 60fps
         # clock.tick(60)
         for event in pygame.event.get():
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 mainLoopRunning = False
                 return
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                captureImage = True
+        if captureImage:
+            target = os.path.join('/tmp', 'test.jpg')
+            remoteDSLR.captureImage(target)
+            captureImage = False 
         if inPreviewLoop:
             image = remoteDSLR.capturePreview()
-            mode = image.mode
-            size = image.size
-            data = image.tostring()
-            assert mode in 'RGB','RGBA'
-            surfacePreview = pygame.image.fromstring(data, size, mode)
+            surfacePreview = pygame.image.frombuffer(image.tostring(), remoteDSLR.getPreviewSize(), remoteDSLR.getPreviewMode())
             screen.blit(surfacePreview, (0,0))
-        pygame.display.flip()
-	print('MainLoop : run finished')
+	    if surfacePreviewRect == None :
+                surfacePreviewRect = surfacePreview.get_rect()
+            pygame.display.update(surfacePreviewRect)
 
 if __name__ == '__main__': main()
