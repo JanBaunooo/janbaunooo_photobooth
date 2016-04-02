@@ -23,11 +23,15 @@ class RemoteDSLR:
     camera = None
     previewMode = None
     previewSize = None
+    photoMode = None
+    photoSize = None
     def __init__(self):
         #Initialize
         self.context = gphoto2.gp_context_new()
         self.camera = gphoto2.check_result(gphoto2.gp_camera_new())
         self.connect()
+        self.photoMode = self.getPhotoMode()
+        self.photoSize = self.getPhotoSize()
         self.previewMode = self.getPreviewMode()
         self.previewSize = self.getPreviewSize()
     def connect(self):
@@ -61,12 +65,35 @@ class RemoteDSLR:
             image = self.capturePreview()
             assert image.mode in 'RGB','RGBA'
             self.previewMode = image.mode
+            self.previewSize = image.size
         return self.previewMode
     def getPreviewSize(self):
         if self.previewSize == None :
             image = self.capturePreview()
             self.previewSize = image.size
-        return self.previewSize            
+            assert image.mode in 'RGB','RGBA'
+            self.previewMode = image.mode
+        return self.previewSize
+    def getPhotoMode(self):
+        if self.photoMode == None :
+            now = time.strftime("%Y-%m-%d-%H:%M:%S")
+            target = os.path.join('/tmp', (now + '.jpg'))
+            #target = os.path.join('/tmp', 'test.jpg')
+            self.captureImage(target)
+            image = Image.open(target)
+            assert image.mode in 'RGB','RGBA'
+            self.photoMode = image.mode
+            self.photoSize = image.size
+        return self.photoMode
+    def getPhotoSize(self):
+        if self.photoSize == None :
+            target = os.path.join('/tmp', 'test.jpg')
+            self.captureImage(target)
+            image = Image.open(target)
+            self.photoSize = image.size
+            assert image.mode in 'RGB','RGBA'
+            self.photoMode = image.mode
+        return self.photoSize
     def captureImage(self,target):
         print('Capture image')
         try:
@@ -124,9 +151,10 @@ def main():
     pygame.display.flip()
     # Initialize components
     remoteDSLR = RemoteDSLR()
-    previewMode = None
-    previewSize = None
     surfacePreviewRect = None
+    surfacePreviewInitialPosition = (int((pygame.display.get_surface()).get_width()/2),int((pygame.display.get_surface()).get_height()/2))
+    surfacePhotoRect = None
+    surfacePhotoInitialPosition = (int((pygame.display.get_surface()).get_width()/2),int((pygame.display.get_surface()).get_height()/2))
     # Initialize clock
     clock = pygame.time.Clock()
     mainLoopRunning = True
@@ -145,13 +173,27 @@ def main():
         if captureImage:
             target = os.path.join('/tmp', 'test.jpg')
             remoteDSLR.captureImage(target)
-            captureImage = False 
+            surfacePhoto = pygame.image.load(target)
+            surfacePhotoRatio = float(surfacePhoto.get_height()) / surfacePhoto.get_width()
+            target_width = int(screen.get_height() / surfacePhotoRatio)
+            surfacePhoto = pygame.transform.scale(surfacePhoto, (target_width, screen.get_height()));
+            surfacePhotoPosition = (int(surfacePhotoInitialPosition[0] - surfacePhoto.get_width()/2), int(surfacePhotoInitialPosition[1] - surfacePhoto.get_height()/2))
+            screen.blit(surfacePhoto, surfacePhotoPosition)
+            if surfacePhotoRect == None :
+                surfacePhotoRect = surfacePhoto.get_rect(topleft=surfacePhotoPosition)
+            pygame.display.update(surfacePhotoRect)
+            captureImage = False
+            pygame.time.wait(5000) 
+            screen.blit(background, (0, 0))
+            pygame.display.flip()
         if inPreviewLoop:
             image = remoteDSLR.capturePreview()
             surfacePreview = pygame.image.frombuffer(image.tostring(), remoteDSLR.getPreviewSize(), remoteDSLR.getPreviewMode())
-            screen.blit(surfacePreview, (0,0))
+            surfacePreview = pygame.transform.flip(surfacePreview,True,False)
+            surfacePreviewPosition = (int(surfacePreviewInitialPosition[0] - surfacePreview.get_width()/2), int(surfacePreviewInitialPosition[1] - surfacePreview.get_height()/2))
+            screen.blit(surfacePreview, surfacePreviewPosition)
 	    if surfacePreviewRect == None :
-                surfacePreviewRect = surfacePreview.get_rect()
+                surfacePreviewRect = surfacePreview.get_rect(topleft=surfacePreviewPosition)
             pygame.display.update(surfacePreviewRect)
 
 if __name__ == '__main__': main()
