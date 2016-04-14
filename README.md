@@ -13,7 +13,7 @@ Take photos sequence :
 - [ ] countdown
 - [ ] turn on lights
 - [x] capture photo
-- [ ] show captured photo briefly
+- [x] show captured photo briefly
 
 Using :
 - libgphoto2
