@@ -27,9 +27,11 @@ class RemoteDSLR:
     photoSize = None
     def __init__(self):
         #Initialize
-        self.context = gphoto2.gp_context_new()
-        self.camera = gphoto2.check_result(gphoto2.gp_camera_new())
+        self.context = gphoto2.Context()
+        self.camera = gphoto2.Camera()
         self.connect()
+        self.config = self.camera.get_config(self.context)
+        self.setConfig()
         self.photoMode = self.getPhotoMode()
         self.photoSize = self.getPhotoSize()
         self.previewMode = self.getPreviewMode()
@@ -47,6 +49,49 @@ class RemoteDSLR:
             # no camera, try again in 2 seconds
             time.sleep(2)
         print('Camera connected')   
+    def setConfig(self):
+        OK, iso = gphoto2.gp_widget_get_child_by_name(
+            self.config, 'iso')
+        if OK >= gphoto2.GP_OK:
+            iso.set_value(iso.get_choice(0))
+        OK, whitebalance = gphoto2.gp_widget_get_child_by_name(
+            self.config, 'whitebalance')
+        if OK >= gphoto2.GP_OK:
+            whitebalance.set_value(whitebalance.get_choice(0))
+        OK, exposurecompensation = gphoto2.gp_widget_get_child_by_name(
+            self.config, 'exposurecompensation')
+        if OK >= gphoto2.GP_OK:
+            exposurecompensation.set_value(exposurecompensation.get_choice(15))
+        OK, focusmode = gphoto2.gp_widget_get_child_by_name(
+            self.config, 'focusmode')
+        if OK >= gphoto2.GP_OK:
+            focusmode.set_value(focusmode.get_choice(0))
+        OK, reviewtime = gphoto2.gp_widget_get_child_by_name(
+            self.config, 'reviewtime')
+        if OK >= gphoto2.GP_OK:
+            reviewtime.set_value(reviewtime.get_choice(1))
+        OK, aperture = gphoto2.gp_widget_get_child_by_name(
+            self.config, 'aperture')
+        if OK >= gphoto2.GP_OK:
+            aperture.set_value(aperture.get_choice(7))
+        OK, shutterspeed = gphoto2.gp_widget_get_child_by_name(
+            self.config, 'shutterspeed')
+        if OK >= gphoto2.GP_OK:
+            shutterspeed.set_value(shutterspeed.get_choice(40))
+        OK, meteringmode = gphoto2.gp_widget_get_child_by_name(
+            self.config, 'meteringmode')
+        if OK >= gphoto2.GP_OK:
+            meteringmode.set_value(meteringmode.get_choice(0))
+        #OK, viewfinder = gphoto2.gp_widget_get_child_by_name(
+        #    self.config, 'viewfinder')
+        #if OK >= gphoto2.GP_OK:
+        #    viewfinder.set_value(1)
+        #OK, autofocusdrive = gphoto2.gp_widget_get_child_by_name(
+        #    self.config, 'autofocusdrive')
+        #if OK >= gphoto2.GP_OK:
+        #    autofocusdrive.set_value(1)
+        self.camera.set_config(self.config, self.context)
+
     def capturePreview(self):
         try:
             camera_file = gphoto2.check_result(
@@ -76,9 +121,7 @@ class RemoteDSLR:
         return self.previewSize
     def getPhotoMode(self):
         if self.photoMode == None :
-            now = time.strftime("%Y-%m-%d-%H:%M:%S")
-            target = os.path.join('/tmp', (now + '.jpg'))
-            #target = os.path.join('/tmp', 'test.jpg')
+            target = os.path.join('/tmp', 'test.jpg')
             self.captureImage(target)
             image = Image.open(target)
             assert image.mode in 'RGB','RGBA'
@@ -171,7 +214,8 @@ def main():
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 captureImage = True
         if captureImage:
-            target = os.path.join('/tmp', 'test.jpg')
+            now = time.strftime("%Y-%m-%d-%H:%M:%S")
+            target = os.path.join('/tmp', (now + '.jpg'))
             remoteDSLR.captureImage(target)
             surfacePhoto = pygame.image.load(target)
             surfacePhotoRatio = float(surfacePhoto.get_height()) / surfacePhoto.get_width()
