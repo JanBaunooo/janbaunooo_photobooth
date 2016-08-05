@@ -140,11 +140,14 @@ class RemoteDSLR:
     def captureImage(self,target):
         print('Capture image')
         try:
+            print time.strftime("%Y-%m-%d %H:%M"), " - Starting captureImage..."
             file_path = gphoto2.check_result(
                                 gphoto2.gp_camera_capture(
                                                 self.camera,
                                                 gphoto2.GP_CAPTURE_IMAGE,
                                                 self.context))
+            print time.strftime("%Y-%m-%d %H:%M"), " - Finished captureImage."
+            print time.strftime("%Y-%m-%d %H:%M"), " - Starting getImageFile..."
             camera_file = gphoto2.check_result(
                                 gphoto2.gp_camera_file_get(
                                                 self.camera,
@@ -152,7 +155,10 @@ class RemoteDSLR:
                                                 file_path.name,
                                                 gphoto2.GP_FILE_TYPE_NORMAL,
                                                 self.context))
+            print time.strftime("%Y-%m-%d %H:%M"), " - Finished getImageFile."
+            print time.strftime("%Y-%m-%d %H:%M"), " - Starting saveImageFile..."
             gphoto2.check_result(gphoto2.gp_file_save(camera_file, target))
+            print time.strftime("%Y-%m-%d %H:%M"), " - Finished saveImageFile."
         except err:
             print "Image not captured : %s" % (err)
 
