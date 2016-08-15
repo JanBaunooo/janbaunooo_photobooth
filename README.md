@@ -7,7 +7,7 @@ Goals :
 - [ ] textual guidance
 - [x] take photos after pushing a physical button
 - [ ] show photos sequence
-- [ ] store photos localy
+- [x] store photos localy
 
 Take photos sequence :
 - [ ] countdown
