@@ -211,7 +211,7 @@ def main():
     captureImage = False
     # Events Loop
     while mainLoopRunning:
-        Limit FPS to 30fps
+        #Limit FPS to 30fps
         clock.tick(30)
         for event in pygame.event.get():
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
