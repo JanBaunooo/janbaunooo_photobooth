@@ -19,8 +19,14 @@ Using :
 - libgphoto2
 - pyGame
 - RPi.GPIO
+    - Need to connect Button to GPIO 3
+    - Need to connect Relay  to GPIO 5
+
+Tested with :
+- Canon EOS 1200D
 
 Inspired by :
 - https://github.com/contractorwolf/RaspberryPiPhotobooth
 - https://github.com/drumminhands/drumminhands_photobooth
 - https://github.com/jcupitt/rtiacquire
+
