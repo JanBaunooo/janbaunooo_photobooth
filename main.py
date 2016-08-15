@@ -10,6 +10,7 @@ try:
     import math
     import gphoto2
     import io
+    import RPi.GPIO as GPIO
     from PIL import Image
     from socket import *
     from pygame.locals import *
@@ -53,35 +54,39 @@ class RemoteDSLR:
         OK, iso = gphoto2.gp_widget_get_child_by_name(
             self.config, 'iso')
         if OK >= gphoto2.GP_OK:
-            iso.set_value(iso.get_choice(0))
-        OK, whitebalance = gphoto2.gp_widget_get_child_by_name(
-            self.config, 'whitebalance')
-        if OK >= gphoto2.GP_OK:
-            whitebalance.set_value(whitebalance.get_choice(0))
-        OK, exposurecompensation = gphoto2.gp_widget_get_child_by_name(
-            self.config, 'exposurecompensation')
-        if OK >= gphoto2.GP_OK:
-            exposurecompensation.set_value(exposurecompensation.get_choice(15))
-        OK, focusmode = gphoto2.gp_widget_get_child_by_name(
-            self.config, 'focusmode')
-        if OK >= gphoto2.GP_OK:
-            focusmode.set_value(focusmode.get_choice(0))
-        OK, reviewtime = gphoto2.gp_widget_get_child_by_name(
-            self.config, 'reviewtime')
-        if OK >= gphoto2.GP_OK:
-            reviewtime.set_value(reviewtime.get_choice(1))
+            iso.set_value(iso.get_choice(5)) #1600
         OK, aperture = gphoto2.gp_widget_get_child_by_name(
             self.config, 'aperture')
         if OK >= gphoto2.GP_OK:
-            aperture.set_value(aperture.get_choice(7))
+            aperture.set_value(aperture.get_choice(5)) #3.2
         OK, shutterspeed = gphoto2.gp_widget_get_child_by_name(
             self.config, 'shutterspeed')
         if OK >= gphoto2.GP_OK:
-            shutterspeed.set_value(shutterspeed.get_choice(40))
+            shutterspeed.set_value(shutterspeed.get_choice(37)) #1/250
+        OK, imageformat = gphoto2.gp_widget_get_child_by_name(
+            self.config, 'imageformat')
+        if OK >= gphoto2.GP_OK:
+            imageformat.set_value(imageformat.get_choice(7)) #Tiny JPEG
+        OK, whitebalance = gphoto2.gp_widget_get_child_by_name(
+            self.config, 'whitebalance')
+        if OK >= gphoto2.GP_OK:
+            whitebalance.set_value(whitebalance.get_choice(0)) #AUTO
+        #OK, exposurecompensation = gphoto2.gp_widget_get_child_by_name(
+        #    self.config, 'exposurecompensation')
+        #if OK >= gphoto2.GP_OK:
+        #    exposurecompensation.set_value(exposurecompensation.get_choice(15))
+        OK, focusmode = gphoto2.gp_widget_get_child_by_name(
+            self.config, 'focusmode')
+        if OK >= gphoto2.GP_OK:
+            focusmode.set_value(focusmode.get_choice(0)) #Un coup
+        OK, reviewtime = gphoto2.gp_widget_get_child_by_name(
+            self.config, 'reviewtime')
+        if OK >= gphoto2.GP_OK:
+            reviewtime.set_value(reviewtime.get_choice(0)) #Aucun
         OK, meteringmode = gphoto2.gp_widget_get_child_by_name(
             self.config, 'meteringmode')
         if OK >= gphoto2.GP_OK:
-            meteringmode.set_value(meteringmode.get_choice(0))
+            meteringmode.set_value(meteringmode.get_choice(0)) #Evaluative
         #OK, viewfinder = gphoto2.gp_widget_get_child_by_name(
         #    self.config, 'viewfinder')
         #if OK >= gphoto2.GP_OK:
@@ -138,14 +143,16 @@ class RemoteDSLR:
             self.photoMode = image.mode
         return self.photoSize
     def captureImage(self,target):
-        print('Capture image')
+        print('Capture image...')
         try:
             print time.strftime("%Y-%m-%d %H:%M"), " - Starting captureImage..."
+            GPIO.output(5, GPIO.HIGH)
             file_path = gphoto2.check_result(
                                 gphoto2.gp_camera_capture(
                                                 self.camera,
                                                 gphoto2.GP_CAPTURE_IMAGE,
                                                 self.context))
+            GPIO.output(5, GPIO.LOW)
             print time.strftime("%Y-%m-%d %H:%M"), " - Finished captureImage."
             print time.strftime("%Y-%m-%d %H:%M"), " - Starting getImageFile..."
             camera_file = gphoto2.check_result(
@@ -159,10 +166,14 @@ class RemoteDSLR:
             print time.strftime("%Y-%m-%d %H:%M"), " - Starting saveImageFile..."
             gphoto2.check_result(gphoto2.gp_file_save(camera_file, target))
             print time.strftime("%Y-%m-%d %H:%M"), " - Finished saveImageFile."
-        except err:
+        except Exception, err:
             print "Image not captured : %s" % (err)
 
 def main():
+    "Initialize GPIO"
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(5, GPIO.OUT, initial=GPIO.LOW)
+    GPIO.setup(3, GPIO.IN)
     "Initialize a new pygame screen using the framebuffer"
     disp_no = os.getenv("DISPLAY")
     if disp_no:
@@ -209,6 +220,8 @@ def main():
     mainLoopRunning = True
     inPreviewLoop = True
     captureImage = False
+    # Initialize GPIO events
+    GPIO.add_event_detect(3, GPIO.RISING)
     # Events Loop
     while mainLoopRunning:
         #Limit FPS to 30fps
@@ -219,6 +232,8 @@ def main():
                 return
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 captureImage = True
+        if GPIO.event_detected(3):
+            captureImage = True        
         if captureImage:
             now = time.strftime("%Y-%m-%d-%H:%M:%S")
             target = os.path.join('/tmp', (now + '.jpg'))
